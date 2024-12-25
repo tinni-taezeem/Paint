@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Paint</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-size: 36px;
+        }
+
+        #tools {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        #tools label {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        #colorPicker, #brushSize {
+            appearance: none;
+            border: none;
+            background-color: transparent;
+            font-size: 18px;
+            color: #ffffff;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        #colorPicker::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        #colorPicker::-webkit-color-swatch {
+            border: none;
+        }
+
+        #brushSize {
+            width: 100%;
+            text-align: center;
+        }
+
+        #clearButton {
+            background-color: #ff5f5f;
+            border: none;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        canvas {
+            border: 2px solid #ffffff;
+            cursor: crosshair;
+            margin-bottom: 20px;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Advanced Paint</h1>
+    <div id="tools">
+        <label for="colorPicker">Select Color:</label>
+        <input type="color" id="colorPicker">
+        <label for="brushSize">Brush Size:</label>
+        <input type="number" id="brushSize" min="0.0" max="5000" value="20">
+        <br>
+        <button id="clearButton">Clear Canvas</button>
+    </div>
+    <canvas id="paintCanvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('paintCanvas');
+        const ctx = canvas.getContext('2d');
+        let isPainting = false;
+
+        // Set default color and brush size
+        let currentColor = '#ffffff';
+        let brushSize = 5;
+
+        // Get canvas position relative to the document
+        function getCanvasPosition(event) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;  // Scale factor for width
+            const scaleY = canvas.height / rect.height;  // Scale factor for height
+            const x = (event.clientX - rect.left) * scaleX;
+            const y = (event.clientY - rect.top) * scaleY;
+            return { x, y };
+        }
+
+        // Hover functionality with the S Pen
+        canvas.addEventListener('mouseenter', startHover);   // Hover enter
+        canvas.addEventListener('mouseleave', endHover);     // Hover leave
+        canvas.addEventListener('mousemove', drawOnHover);   // Move on hover
+
+        // Function to start hovering (begin drawing when hovering with pen)
+        function startHover(event) {
+            isPainting = true;  // Start drawing on hover
+            ctx.beginPath();    // Reset path when hover starts
+        }
+
+        // Function to end hovering (stop drawing when hover ends)
+        function endHover() {
+            isPainting = false;  // Stop drawing when hover ends
+            ctx.beginPath();  // End the current path
+        }
+
+        // Function to draw while hovering or touching
+        function drawOnHover(event) {
+            if (!isPainting) return;  // Only draw when hovering or touching is active
+
+            // Get the position of the hover (mouse or pen)
+            const { x, y } = getCanvasPosition(event);
+
+            // Set up the drawing properties
+            ctx.lineWidth = brushSize;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentColor;
+
+            // Start a new line when you move the pen
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y); // Draw a small dot when the pen moves slightly
+            ctx.stroke();
+            ctx.beginPath();  // Begin a new path after each stroke
+            ctx.moveTo(x, y);  // Move to the current position for the next stroke
+        }
+
+        // Event listeners for touch (hand input)
+        canvas.addEventListener('touchstart', startPosition); // Start touch drawing
+        canvas.addEventListener('touchend', endPosition);     // End touch drawing
+        canvas.addEventListener('touchmove', drawTouch);      // Draw on touch move
+
+        // Event listeners for mouse or pen input (hover and click)
+        canvas.addEventListener('mousedown', startPosition);  // Start drawing on mouse/pen down
+        canvas.addEventListener('mouseup', endPosition);      // End drawing on mouse/pen up
+        canvas.addEventListener('mousemove', drawTouch);      // Draw on mouse/pen move
+
+        // Start drawing on touch or mouse/pen click
+        function startPosition(event) {
+            isPainting = true;
+            drawTouch(event);
+        }
+
+        // End drawing on touch or mouse/pen release
+        function endPosition() {
+            isPainting = false;
+            ctx.beginPath();
+        }
+
+        // Function to draw on touch or mouse/pen move
+        function drawTouch(event) {
+            event.preventDefault();
+            if (!isPainting) return;
+
+            const { x, y } = getCanvasPosition(event);
+
+            ctx.lineWidth = brushSize;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentColor;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        // Update brush size based on user input
+        document.getElementById('brushSize').addEventListener('input', function() {
+            brushSize = parseInt(document.getElementById('brushSize').value);
+        });
+
+        // Clear the canvas
+        document.getElementById('clearButton').addEventListener('click', function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // Event listener for color picker
+        const colorPicker = document.getElementById('colorPicker');
+        colorPicker.addEventListener('input', function() {
+            currentColor = colorPicker.value;
+        });
+    </script>
+</body>
+</html>
