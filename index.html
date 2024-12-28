@@ -80,11 +80,11 @@
         <label for="colorPicker">Select Color:</label>
         <input type="color" id="colorPicker">
         <label for="brushSize">Brush Size:</label>
-        <input type="number" id="brushSize" min="0.0" max="5000" value="20">
+        <input type="number" id="brushSize" min="1" max="5000" value="20">
         <br>
         <button id="clearButton">Clear Canvas</button>
     </div>
-    <canvas id="paintCanvas" width="700" height="600"></canvas>
+    <canvas id="paintCanvas" width="600" height="600"></canvas>
 
     <script>
         const canvas = document.getElementById('paintCanvas');
